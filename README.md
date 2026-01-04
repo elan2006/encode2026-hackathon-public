@@ -46,7 +46,7 @@ This project consists of two main components:
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/elan2006/encode2026-hackathon-public.git
 cd encode2026-hackathon-public
 ```
 

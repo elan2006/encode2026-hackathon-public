@@ -1,3 +1,7 @@
+from fastapi import FastAPI, File, UploadFile, Form
+from typing import Optional
+from ocr.extractor import extract_text, extract_text_api
+from fastapi.middleware.cors import CORSMiddleware
 import json
 import main
 

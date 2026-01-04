@@ -95,17 +95,19 @@ export const useConversationStore = create<ConversationState>()(
         });
 
         try {
-          const activeConversation = get().conversations.find(
+          // Get conversation history (exclude the current assistant message being generated)
+          const currentConversation = conversations.find(
             (c) => c.id === conversationId,
           );
-          const history = activeConversation ? activeConversation.messages : [];
+          const historyMessages =
+            currentConversation?.messages.slice(0, -1) || [];
 
           const response = await analyzeProduct({
             message: content,
             image: attachments?.find((a) => a.type === "image")?.value,
             barcode: attachments?.find((a) => a.type === "barcode")?.value,
             conversationId,
-            history,
+            history: historyMessages,
           });
 
           set((state) => ({
@@ -196,6 +198,11 @@ export const useConversationStore = create<ConversationState>()(
         }));
 
         try {
+          // Get conversation history (exclude the failed message)
+          const historyMessages = conversation.messages.filter(
+            (msg) => msg.id !== messageId,
+          );
+
           const response = await analyzeProduct({
             message: userMessage.content,
             image: userMessage.attachments?.find((a) => a.type === "image")
@@ -203,7 +210,7 @@ export const useConversationStore = create<ConversationState>()(
             barcode: userMessage.attachments?.find((a) => a.type === "barcode")
               ?.value,
             conversationId: conversation.id,
-            history: conversation.messages,
+            history: historyMessages,
           });
 
           set((state) => ({

@@ -1,7 +1,3 @@
-from fastapi import FastAPI, File, UploadFile, Form
-from typing import Optional
-from ocr.extractor import extract_text, extract_text_api
-from fastapi.middleware.cors import CORSMiddleware
 import json
 import main
 
@@ -17,6 +13,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 @app.post("/api/getresponse/")
 async def model(
     model: str = Form(...),
@@ -31,7 +29,6 @@ async def model(
         image_text = extract_text(image_bytes)
 
     parsed_history = json.loads(history) if history else []
-
 
     return main.get_response(
         model_name=model,

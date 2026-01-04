@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Camera, AlertCircle, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useRef, useEffect, useCallback } from "react";
+import { X, Camera, AlertCircle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BarcodeScannerModalProps {
   isOpen: boolean;
@@ -8,66 +8,42 @@ interface BarcodeScannerModalProps {
   onScan: (barcode: string) => void;
 }
 
-type ScannerState = 'initializing' | 'ready' | 'scanning' | 'error';
+type ScannerState = "initializing" | "ready" | "scanning" | "error";
 
-export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerModalProps) {
+export function BarcodeScannerModal({
+  isOpen,
+  onClose,
+  onScan,
+}: BarcodeScannerModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [state, setState] = useState<ScannerState>('initializing');
-  const [error, setError] = useState<string>('');
+  const [state, setState] = useState<ScannerState>("initializing");
+  const [error, setError] = useState<string>("");
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
   }, []);
 
-  const startCamera = useCallback(async () => {
-    try {
-      setState('initializing');
-      setError('');
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
-
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setState('ready');
-        startScanning();
-      }
-    } catch (err) {
-      console.error('Camera error:', err);
-      if (err instanceof Error) {
-        if (err.name === 'NotAllowedError') {
-          setError('Camera access denied. Please allow camera access in your browser settings.');
-        } else if (err.name === 'NotFoundError') {
-          setError('No camera found on this device.');
-        } else {
-          setError('Failed to access camera. Please try again.');
-        }
-      }
-      setState('error');
-    }
-  }, []);
-
   const startScanning = useCallback(() => {
-    if (!videoRef.current || state !== 'ready') return;
+    if (!videoRef.current || state !== "ready") return;
 
-    setState('scanning');
+    setState("scanning");
 
     // Check for BarcodeDetector API
-    if ('BarcodeDetector' in window) {
-      const detector = new (window as any).BarcodeDetector({
-        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'],
+    if ("BarcodeDetector" in window) {
+      const detector = new window.BarcodeDetector({
+        formats: [
+          "ean_13",
+          "ean_8",
+          "upc_a",
+          "upc_e",
+          "code_128",
+          "code_39",
+          "qr_code",
+        ],
       });
 
       const scan = async () => {
@@ -95,7 +71,7 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
       // Fallback: simulate scan after delay for demo
       setTimeout(() => {
         if (isOpen) {
-          const mockBarcode = '8901234567890';
+          const mockBarcode = "8901234567890";
           stopCamera();
           onScan(mockBarcode);
         }
@@ -103,12 +79,50 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
     }
   }, [state, isOpen, onScan, stopCamera]);
 
+  const startCamera = useCallback(async () => {
+    try {
+      setState("initializing");
+      setError("");
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setState("ready");
+        startScanning();
+      }
+    } catch (err) {
+      console.error("Camera error:", err);
+      if (err instanceof Error) {
+        if (err.name === "NotAllowedError") {
+          setError(
+            "Camera access denied. Please allow camera access in your browser settings.",
+          );
+        } else if (err.name === "NotFoundError") {
+          setError("No camera found on this device.");
+        } else {
+          setError("Failed to access camera. Please try again.");
+        }
+      }
+      setState("error");
+    }
+  }, [startScanning]);
+
   useEffect(() => {
     if (isOpen) {
       startCamera();
     } else {
       stopCamera();
-      setState('initializing');
+      setState("initializing");
     }
 
     return () => stopCamera();
@@ -119,7 +133,7 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-foreground/60 backdrop-blur-sm"
         onClick={onClose}
       />
@@ -142,7 +156,7 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
 
         {/* Scanner View */}
         <div className="relative aspect-[4/3] bg-foreground/10">
-          {state === 'error' ? (
+          {state === "error" ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
               <AlertCircle className="w-12 h-12 text-destructive mb-3" />
               <p className="text-sm text-muted-foreground">{error}</p>
@@ -169,18 +183,20 @@ export function BarcodeScannerModal({ isOpen, onClose, onScan }: BarcodeScannerM
 
               {/* Status */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                <div className={cn(
-                  'px-3 py-1.5 rounded-full text-xs font-medium',
-                  'bg-card/90 backdrop-blur-sm shadow-sm',
-                  'flex items-center gap-2'
-                )}>
-                  {state === 'initializing' && (
+                <div
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-medium",
+                    "bg-card/90 backdrop-blur-sm shadow-sm",
+                    "flex items-center gap-2",
+                  )}
+                >
+                  {state === "initializing" && (
                     <>
                       <Loader2 className="w-3 h-3 animate-spin" />
                       <span>Starting camera...</span>
                     </>
                   )}
-                  {(state === 'ready' || state === 'scanning') && (
+                  {(state === "ready" || state === "scanning") && (
                     <>
                       <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                       <span>Point at barcode</span>

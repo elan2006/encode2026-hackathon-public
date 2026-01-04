@@ -103,13 +103,58 @@ uvicorn server:app --reload --port 53300
 
 The backend server will be available at `http://localhost:53300`
 
-### Frontend Development Server
+### Frontend Development Server (Port 8080)
 ```bash
 cd frontend
-npm run dev
+npm run dev -- --port 8080
 ```
 
 The frontend application will be available at `http://localhost:8080` (or the port shown in terminal)
+
+## 🔧 Troubleshooting
+
+### Frontend Import Resolution Issues
+
+If you encounter errors like "Failed to resolve import @/components/ui/toaster", try these solutions:
+
+1. **Clear Vite cache and restart**:
+   ```bash
+   cd frontend
+   rm -rf node_modules/.vite
+   npm run dev -- --port 8080
+   ```
+
+2. **Reinstall dependencies**:
+   ```bash
+   cd frontend
+   rm -rf node_modules package-lock.json
+   npm i
+   npm run dev -- --port 8080
+   ```
+
+3. **Verify path aliases are working**:
+   - Check that `vite.config.ts` has the `@` alias pointing to `./src`
+   - Restart the dev server after any config changes
+
+### Backend Connection Issues
+
+If you see "Cannot connect to backend" errors:
+
+1. **Verify backend is running**:
+   ```bash
+   curl http://localhost:53300/health
+   ```
+   Should return: `{"status":"healthy","service":"AI-Native Consumer Health API"}`
+
+2. **Check backend logs** for any startup errors
+
+3. **Verify API keys** in backend `.env` file are set correctly
+
+### Common Issues
+
+- **Port conflicts**: Ensure ports 53300 (backend) and 8080 (frontend) are available
+- **API key errors**: Verify your `.env` file has valid `GOOGLE_API_KEY` and `OCR_API_KEY`
+- **CORS issues**: Backend allows frontend on `http://localhost:8080`
 
 ## 🔑 API Configuration
 
@@ -226,7 +271,7 @@ uv run main.py
    ```bash
    cd frontend
    npm i  # Install dependencies if not done
-   npm run dev
+   npm run dev -- --port 8080
    ```
 
 3. **Access Application**:
